@@ -18,7 +18,8 @@ contract Coinflip is Ownable {
     DirectFundingConsumer private vrfRequestor;
 
     event BetPlaced(address indexed player, uint8[3] guesses);
-    event BetResult(address indexed player, bool won);
+    event BetResult(address indexed player, bool win);
+    event FlipResult(uint8[3] flips, uint8[3] Guesses);
 
     constructor() Ownable(msg.sender) {
         vrfRequestor = new DirectFundingConsumer();
@@ -58,13 +59,19 @@ contract Coinflip is Ownable {
 
         (, bool fulfilled, uint256[] memory randomWords) = vrfRequestor.getRequestStatus(requestId);
         require(fulfilled, "Request not fulfilled");
+        require(randomWords.length >= 3, "Insufficient random words");
 
-        uint8[3] memory guesses = bets[msg.sender];
+
+        uint8[3] memory Guesses = bets[msg.sender];
         uint8[3] memory flips;
         for (uint256 i = 0; i < 3; i++) {
             flips[i] = uint8(randomWords[i] % 2);
         }
-        bool win = (flips[0] == guesses[0] && flips[1] == guesses[1] && flips[2] == guesses[2]);
+
+        bool win = (flips[0] == Guesses[0] && flips[1] == Guesses[1] && flips[2] == Guesses[2]);
+        
+        emit FlipResult(flips, Guesses); 
+
         emit BetResult(msg.sender, win);
         return win;
     }
