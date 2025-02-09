@@ -3,10 +3,12 @@ pragma solidity ^0.8.23;
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {DirectFundingConsumer} from "./DirectFundingConsumer.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
 
 interface LinkTokenInterface {
     function balanceOf(address account) external view returns (uint256);
     function transfer(address recipient, uint256 amount) external returns (bool);
+    
 }
 
 contract Coinflip is Ownable {
@@ -19,6 +21,8 @@ contract Coinflip is Ownable {
 
     event BetPlaced(address indexed player, uint8[3] guesses);
     event BetResult(address indexed player, bool won);
+    event FlipResult(address indexed player, bool result, uint8[3] flips, uint8[3] guesses);
+
 
     constructor() Ownable(msg.sender) {
         vrfRequestor = new DirectFundingConsumer();
@@ -52,15 +56,13 @@ contract Coinflip is Ownable {
         return fulfilled;
     }
 
-    function determineFlip() external view returns (bool) {
+   function determineFlip() external returns (bool) {
         uint256 requestId = playerRequestID[msg.sender];
         require(requestId != 0, "No request found");
 
         (, bool fulfilled, uint256[] memory randomWords) = vrfRequestor.getRequestStatus(requestId);
         require(fulfilled, "Request not fulfilled");
-        require(randomWords.length >= 3, "Insufficient random words");
-
-
+        require(randomWords.length == 3, string(abi.encodePacked("Insufficient random words ", Strings.toString(randomWords.length))));        
         uint8[3] memory flips;
         for (uint256 i = 0; i < 3; i++) {
             flips[i] = uint8(randomWords[i] % 2);
@@ -68,6 +70,8 @@ contract Coinflip is Ownable {
         
         uint8[3] memory guesses = bets[msg.sender];
 
-        return (flips[0] == guesses[0] && flips[1] == guesses[1] && flips[2] == guesses[2]);
+        bool result = (flips[0] == guesses[0] && flips[1] == guesses[1] && flips[2] == guesses[2]);
+        emit FlipResult(msg.sender, result, flips, guesses);
+        return result;
     }
 }
