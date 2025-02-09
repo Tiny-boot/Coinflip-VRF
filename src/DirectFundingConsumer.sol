@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // An example of a consumer contract that directly pays for each request.
-pragma solidity ^0.8.19;
+pragma solidity ^0.8.20;
 
 import {ConfirmedOwner} from "@chainlink/contracts@1.2.0/src/v0.8/shared/access/ConfirmedOwner.sol";
 import {LinkTokenInterface} from "@chainlink/contracts@1.2.0/src/v0.8/shared/interfaces/LinkTokenInterface.sol";
@@ -43,14 +43,14 @@ contract DirectFundingConsumer is VRFV2PlusWrapperConsumerBase, ConfirmedOwner {
     // this limit based on the network that you select, the size of the request,
     // and the processing of the callback request in the fulfillRandomWords()
     // function.
-    uint32 public callbackGasLimit = 100000;
+    uint32 public callbackGasLimit = 200000;
 
     // The default is 3, but you can set this higher.
     uint16 public requestConfirmations = 3;
 
     // For this example, retrieve 2 random values in one request.
     // Cannot exceed VRFV2Wrapper.getConfig().maxNumWords.
-    uint32 public numWords = 2;
+    uint32 public numWords = 3;
 
     // Address LINK - hardcoded for Sepolia
     address public linkAddress = 0x779877A7B0D9E8603169DdbD7836e478b4624789;
